@@ -1,7 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from '../prisma/prisma.service';
 
+// /health is hit by Render's healthcheck every 30s.
+// Skip throttler entirely — it's read-only, no rate limit needed,
+// and this saves ~90% of our Redis commands.
 @Controller('health')
+@SkipThrottle()
 export class HealthController {
   constructor(private prisma: PrismaService) {}
 

@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Throttle } from '@nestjs/throttler';
 import { PromoService } from './promo.service';
 import { JwtGuard } from '../common/jwt.guard';
