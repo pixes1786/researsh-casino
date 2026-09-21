@@ -45,3 +45,4 @@ redisdata
 apps/api/prisma/*.db
 apps/api/prisma/*.db-journal
 .env.supabase
+apps/api/prisma/change-admin.ts
