@@ -14,12 +14,13 @@ async function main() {
   }
   const pm = Object.fromEntries((await prisma.gameProvider.findMany()).map((p) => [p.slug, p.id]));
   const games = [
-    { slug: 'european-roulette', name: 'European Roulette', category: 'roulette', providerId: pm['novaplay'], rtp: 97.3, volatility: 'medium' },
-    { slug: 'neon-fruits', name: 'Neon Fruits', category: 'slots', providerId: pm['aurorasoft'], rtp: 96.1, volatility: 'high' },
-    { slug: 'aurora-blackjack', name: 'Aurora Blackjack', category: 'blackjack', providerId: pm['bytespin'], rtp: 99.5, volatility: 'low' },
-    { slug: 'crash-x', name: 'Crash X', category: 'crash', providerId: pm['novaplay'], rtp: 97.0, volatility: 'high' },
-    { slug: 'mines-rc', name: 'Mines RC', category: 'mines', providerId: pm['aurorasoft'], rtp: 97.0, volatility: 'medium' },
-  ];
+  { slug: 'european-roulette', name: 'American Roulette', category: 'roulette', providerId: pm['novaplay'],   rtp: 94.7, volatility: 'medium' },
+  { slug: 'neon-fruits',       name: 'Lucky Fruits',      category: 'slots',    providerId: pm['aurorasoft'], rtp: 95.7, volatility: 'high' },
+  { slug: 'aurora-blackjack',  name: 'Aurora Blackjack',  category: 'blackjack',providerId: pm['bytespin'],   rtp: 99.5, volatility: 'low' },
+  { slug: 'crash-x',           name: 'Crash X',           category: 'crash',    providerId: pm['novaplay'],   rtp: 97.0, volatility: 'high' },
+  { slug: 'mines-rc',          name: 'Mines RC',          category: 'mines',    providerId: pm['aurorasoft'], rtp: 97.0, volatility: 'medium' },
+  { slug: 'dice-x',            name: 'Speedometer',       category: 'speedometer', providerId: pm['novaplay'], rtp: 99.0, volatility: 'medium' },
+];
   for (const g of games) {
     await prisma.game.upsert({
       where: { slug: g.slug }, update: {},
