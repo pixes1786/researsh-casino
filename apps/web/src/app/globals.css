@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { background: #0a0a0f; color: #e5e7eb; }
+body {
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(168,85,247,0.15), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(34,211,238,0.10), transparent 60%);
+  background-attachment: fixed;
+}
+* { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #22222e; border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }

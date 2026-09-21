@@ -1,0 +1,44 @@
+# deps
+node_modules
+.pnpm-store
+.pnpm-debug.log
+
+# build
+dist
+.next
+out
+build
+apps/*/dist
+apps/*/.next
+apps/*/.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.example
+apps/api/.env
+
+# logs & caches
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.turbo
+.cache
+coverage
+
+# runtime data
+*.sqlite
+*.sqlite3
+pgdata
+redisdata
+
+# editors / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# prisma
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal

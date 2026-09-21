@@ -1,0 +1,316 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  username      String        @unique
+  passwordHash  String
+  role          Role          @default(USER)
+  status        UserStatus    @default(ACTIVE)
+  kycStatus     KycStatus     @default(UNVERIFIED)
+  mfaEnabled    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  profile       Profile?
+  wallet        Wallet?
+  bets          Bet[]
+  ledgerEntries LedgerEntry[]
+  gameRounds    GameRound[]
+  fairnessSeeds FairnessSeed[]
+  auditLogs     AuditLog[]
+  mfaSecret     MfaSecret?
+  deviceTokens  DeviceToken[]
+  dailyClaims   DailyBonusClaim[]
+  missions      UserMission[]
+  tournamentEntries TournamentEntry[]
+  securityEvents SecurityEvent[]
+}
+
+enum Role {
+  USER
+  MODERATOR
+  SUPPORT
+  RISK
+  ADMIN
+  SUPERADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  SELF_EXCLUDED
+}
+
+enum KycStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model Profile {
+  id         String @id @default(cuid())
+  userId     String @unique
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl  String?
+  locale     String @default("ru")
+  currency   String @default("RC")
+  vipLevel   Int    @default(0)
+  loyaltyPts Int    @default(0)
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency  String   @default("RC")
+  balance   Decimal  @default(0) @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LedgerEntry {
+  id           String     @id @default(cuid())
+  walletId     String
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  type         LedgerType
+  amount       Decimal    @db.Decimal(20, 8)
+  balanceAfter Decimal    @db.Decimal(20, 8)
+  refType      String?
+  refId        String?
+  reason       String?
+  requestId    String?
+  createdAt    DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([walletId])
+}
+
+enum LedgerType {
+  SIGNUP_BONUS
+  DAILY_BONUS
+  BET_DEBIT
+  BET_WIN
+  ADJUSTMENT
+  REFUND
+}
+
+model GameProvider {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  name    String
+  logoUrl String?
+  games   Game[]
+}
+
+model Game {
+  id         String       @id @default(cuid())
+  slug       String       @unique
+  name       String
+  category   String
+  providerId String
+  provider   GameProvider @relation(fields: [providerId], references: [id])
+  thumbnail  String?
+  rtp        Float        @default(97.3)
+  volatility String       @default("medium")
+  isActive   Boolean      @default(true)
+  playersNow Int          @default(0)
+  rating     Float        @default(4.5)
+  minBet     Decimal      @default(0.10) @db.Decimal(20, 8)
+  maxBet     Decimal      @default(1000) @db.Decimal(20, 8)
+  rounds     GameRound[]
+  createdAt  DateTime     @default(now())
+}
+
+model GameRound {
+  id             String        @id @default(cuid())
+  gameId         String
+  game           Game          @relation(fields: [gameId], references: [id])
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  serverSeed     String
+  serverSeedHash String
+  clientSeed     String
+  nonce          Int
+  result         Json
+  totalBet            Decimal  @db.Decimal(20, 8)
+  totalWin            Decimal  @db.Decimal(20, 8)
+  wageredForRewards   Decimal  @default(0) @db.Decimal(20, 8)
+  settledAt           DateTime?
+  createdAt      DateTime      @default(now())
+  bets           Bet[]
+
+  @@index([gameId, createdAt])
+}
+
+model Bet {
+  id        String    @id @default(cuid())
+  roundId   String
+  round     GameRound @relation(fields: [roundId], references: [id])
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  betType   String
+  betValue  Json
+  amount    Decimal   @db.Decimal(20, 8)
+  payout    Decimal   @default(0) @db.Decimal(20, 8)
+  won       Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model FairnessSeed {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serverSeed     String
+  serverSeedHash String
+  clientSeed     String
+  nonce          Int       @default(0)
+  revealedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model LiveWin {
+  id        String   @id @default(cuid())
+  username  String
+  gameSlug  String
+  amount    Decimal  @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  reason    String?
+  ip        String?
+  userAgent String?
+  diff      Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+
+model MfaSecret {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secret        String
+  recoveryCodes String[]
+  confirmedAt   DateTime?
+  createdAt     DateTime @default(now())
+}
+
+
+model DailyBonusClaim {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(20, 8)
+  streak    Int      @default(1)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+
+model Mission {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  title        String
+  description  String
+  kind         String   // "rounds_played" | "wagered_rc" | "wins_count" | "net_profit"
+  target       Int
+  reward       Decimal  @db.Decimal(20, 8)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  progresses   UserMission[]
+}
+
+model UserMission {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId  String
+  mission    Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  progress   Int      @default(0)
+  claimedAt  DateTime?
+  resetAt    DateTime
+  createdAt  DateTime @default(now())
+  @@unique([userId, missionId, resetAt])
+  @@index([userId])
+}
+
+model Tournament {
+  id         String   @id @default(cuid())
+  name       String
+  startsAt   DateTime
+  endsAt     DateTime
+  prizePool  Decimal  @db.Decimal(20, 8)
+  isActive   Boolean  @default(true)
+  entries    TournamentEntry[]
+}
+
+model TournamentEntry {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wagered      Decimal    @default(0) @db.Decimal(20, 8)
+  createdAt    DateTime   @default(now())
+  @@unique([tournamentId, userId])
+  @@index([tournamentId, wagered])
+}
+
+
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  kind      String   // login_failed, login_success, mfa_failed, mfa_enabled, mfa_disabled, rate_limit, admin_action, suspicious_bet
+  severity  String   @default("info") // info | warn | danger
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  ip        String?
+  userAgent String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([kind, createdAt])
+  @@index([severity, createdAt])
+}
+
+
+model DeviceToken {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String   @unique
+  label        String?
+  ipAtIssue    String?
+  userAgent    String?
+  lastSeenAt   DateTime @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}

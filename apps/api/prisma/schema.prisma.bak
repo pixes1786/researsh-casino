@@ -1,0 +1,145 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  username String @unique
+  passwordHash String
+  role Role @default(USER)
+  status UserStatus @default(ACTIVE)
+  kycStatus KycStatus @default(UNVERIFIED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile Profile?
+  wallet Wallet?
+  bets Bet[]
+  ledgerEntries LedgerEntry[]
+  gameRounds GameRound[]
+  fairnessSeeds FairnessSeed[]
+}
+enum Role { USER MODERATOR SUPPORT RISK ADMIN SUPERADMIN }
+enum UserStatus { ACTIVE SUSPENDED SELF_EXCLUDED }
+enum KycStatus { UNVERIFIED PENDING VERIFIED REJECTED }
+
+model Profile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl String?
+  locale String @default("ru")
+  currency String @default("RC")
+  vipLevel Int @default(0)
+  loyaltyPts Int @default(0)
+}
+
+model Wallet {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency String @default("RC")
+  balance Decimal @default(0) @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LedgerEntry {
+  id String @id @default(cuid())
+  walletId String
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  type LedgerType
+  amount Decimal @db.Decimal(20, 8)
+  balanceAfter Decimal @db.Decimal(20, 8)
+  refType String?
+  refId String?
+  reason String?
+  requestId String?
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+  @@index([walletId])
+}
+enum LedgerType { SIGNUP_BONUS DAILY_BONUS BET_DEBIT BET_WIN ADJUSTMENT REFUND }
+
+model GameProvider {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  logoUrl String?
+  games Game[]
+}
+
+model Game {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  category String
+  providerId String
+  provider GameProvider @relation(fields: [providerId], references: [id])
+  thumbnail String?
+  rtp Float @default(97.3)
+  volatility String @default("medium")
+  isActive Boolean @default(true)
+  playersNow Int @default(0)
+  rating Float @default(4.5)
+  minBet Decimal @default(0.10) @db.Decimal(20, 8)
+  maxBet Decimal @default(1000) @db.Decimal(20, 8)
+  rounds GameRound[]
+  createdAt DateTime @default(now())
+}
+
+model GameRound {
+  id String @id @default(cuid())
+  gameId String
+  game Game @relation(fields: [gameId], references: [id])
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  serverSeed String
+  serverSeedHash String
+  clientSeed String
+  nonce Int
+  result Json
+  totalBet Decimal @db.Decimal(20, 8)
+  totalWin Decimal @db.Decimal(20, 8)
+  settledAt DateTime?
+  createdAt DateTime @default(now())
+  bets Bet[]
+  @@index([gameId, createdAt])
+}
+
+model Bet {
+  id String @id @default(cuid())
+  roundId String
+  round GameRound @relation(fields: [roundId], references: [id])
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  betType String
+  betValue Json
+  amount Decimal @db.Decimal(20, 8)
+  payout Decimal @default(0) @db.Decimal(20, 8)
+  won Boolean @default(false)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+
+model FairnessSeed {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serverSeed String
+  serverSeedHash String
+  clientSeed String
+  nonce Int @default(0)
+  revealedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId])
+}
+
+model LiveWin {
+  id String @id @default(cuid())
+  username String
+  gameSlug String
+  amount Decimal @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
