@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: research-casino-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: .
+    buildCommand: |
+      corepack enable
+      pnpm install --frozen-lockfile=false
+      pnpm --filter @rc/api prisma:generate
+      pnpm --filter @rc/api build
+    startCommand: |
+      pnpm --filter @rc/api exec prisma migrate deploy
+      pnpm --filter @rc/api start:prod
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false

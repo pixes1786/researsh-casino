@@ -15,6 +15,7 @@ import { AdminModule } from './admin/admin.module';
 import { PromoModule } from './promo/promo.module';
 import { SecurityModule } from './security/security.module';
 import { CaptchaModule } from './captcha/captcha.module';
+import { HealthModule } from './health/health.module';
 import { makeRedisStorage } from './throttler/redis-throttler.module';
 
 const storage = makeRedisStorage();
@@ -43,6 +44,7 @@ const storage = makeRedisStorage();
     PromoModule,
     SecurityModule,
     CaptchaModule,
+    HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
