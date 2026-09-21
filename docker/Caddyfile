@@ -1,0 +1,51 @@
+{
+	email admin@{$DOMAIN}
+	admin off
+}
+
+{$DOMAIN} {
+	encode gzip zstd
+
+	# security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		-Server
+	}
+
+	# ─── АДМИНКА: Basic Auth ───
+	@admin path /admin /admin/* /api/admin /api/admin/*
+	handle @admin {
+		basic_auth {
+			{$ADMIN_USER} {$ADMIN_PASS_HASH}
+		}
+		reverse_proxy web:3000
+	}
+
+	# ─── API ───
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:3001
+	}
+
+	# ─── WebSocket (Socket.IO) ───
+	handle /socket.io/* {
+		reverse_proxy api:3001
+	}
+
+	# ─── всё остальное → Next.js ───
+	handle {
+		reverse_proxy web:3000
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+		format console
+	}
+}
