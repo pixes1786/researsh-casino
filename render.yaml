@@ -6,7 +6,7 @@ services:
     region: frankfurt
     rootDir: .
     buildCommand: |
-      corepack enable
+      npm install -g pnpm@9.0.0
       pnpm install --frozen-lockfile=false
       pnpm --filter @rc/api prisma:generate
       pnpm --filter @rc/api build
@@ -16,6 +16,8 @@ services:
     healthCheckPath: /health
     autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: "20.12.2"
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
