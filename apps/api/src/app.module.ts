@@ -14,14 +14,21 @@ import { MeModule } from './me/me.module';
 import { AdminModule } from './admin/admin.module';
 import { PromoModule } from './promo/promo.module';
 import { SecurityModule } from './security/security.module';
+import { CaptchaModule } from './captcha/captcha.module';
+import { makeRedisStorage } from './throttler/redis-throttler.module';
+
+const storage = makeRedisStorage();
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([
-      { name: 'default', ttl: 60_000, limit: 1000 },
-      { name: 'auth', ttl: 60_000, limit: 30 },
-      { name: 'wallet', ttl: 60_000, limit: 200 },
-    ]),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { name: 'default', ttl: 60_000, limit: 1000 },
+        { name: 'auth',    ttl: 60_000, limit: 30   },
+        { name: 'wallet',  ttl: 60_000, limit: 200  },
+      ],
+      ...(storage ? { storage } : {}),
+    }),
     PrismaModule,
     AuthModule,
     WalletModule,
@@ -35,6 +42,7 @@ import { SecurityModule } from './security/security.module';
     AdminModule,
     PromoModule,
     SecurityModule,
+    CaptchaModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

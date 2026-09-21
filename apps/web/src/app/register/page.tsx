@@ -3,18 +3,20 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
   const r = useRouter();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true);
     try {
-      await api.register({ email, username, password });
+      await api.register({ email, username, password, turnstileToken: captchaToken });
       toast.success('Registered. +1000 RC welcome bonus');
       window.location.href = '/lobby';
       return;
@@ -38,6 +40,7 @@ export default function RegisterPage() {
         placeholder="Password (min 8)"
         className="w-full bg-bg border border-border rounded px-3 py-2"
       />
+      <TurnstileWidget onToken={setCaptchaToken} />
       <button disabled={loading} className="w-full py-2 rounded bg-neon hover:bg-neon/80 font-semibold">
         {loading ? '…' : 'Create account'}
       </button>

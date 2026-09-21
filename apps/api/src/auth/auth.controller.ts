@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
@@ -14,6 +15,7 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, MfaCodeDto } from './dto';
 import { MfaService } from './mfa.service';
+import { CaptchaService } from '../captcha/captcha.service';
 import { JwtGuard } from '../common/jwt.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 
@@ -22,7 +24,11 @@ const DEVICE_COOKIE = 'device_token';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private auth: AuthService, private mfa: MfaService) {}
+  constructor(
+    private auth: AuthService,
+    private mfa: MfaService,
+    private captcha: CaptchaService,
+  ) {}
 
   @Post('register')
   @Throttle({ auth: { limit: 5, ttl: 60_000 } })
@@ -31,6 +37,8 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const okCaptcha = await this.captcha.verify(dto.turnstileToken, clientIp(req));
+    if (!okCaptcha) throw new UnauthorizedException('CAPTCHA_FAILED');
     const t = await this.auth.register(dto, clientIp(req), req.headers['user-agent']);
     this.setAuthCookies(res, t.accessToken, t.refreshToken);
     this.setDeviceCookie(res, t.deviceToken);
@@ -44,6 +52,11 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    // captcha мягкая: проверяется только если задан токен (в проде фронт всегда шлёт)
+    if (dto.turnstileToken) {
+      const okCaptcha = await this.captcha.verify(dto.turnstileToken, clientIp(req));
+      if (!okCaptcha) throw new UnauthorizedException('CAPTCHA_FAILED');
+    }
     const t = await this.auth.login(dto, clientIp(req), req.headers['user-agent']);
     if ('mfaRequired' in t) return t;
     this.setAuthCookies(res, t.accessToken, t.refreshToken);
