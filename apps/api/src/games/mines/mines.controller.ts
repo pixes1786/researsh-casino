@@ -49,9 +49,4 @@ export class MinesController {
   history(@CurrentUser() u: any) {
     return this.mines.history(u.sub, 20);
   }
-
-  @Get('paytable/:mines')
-  paytable(@Param('mines') mines: string) {
-    return this.mines.paytable(parseInt(mines, 10));
-  }
 }
