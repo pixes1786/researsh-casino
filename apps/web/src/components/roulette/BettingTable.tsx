@@ -84,21 +84,6 @@ export function BettingTable({
 
   return (
     <div className="select-none w-full">
-      {/* ─── TOP: column 2:1 row ─── */}
-      <div className="flex gap-1 mb-1">
-        <div className="w-[44px] sm:w-[52px] md:w-[60px] shrink-0" />
-        <div className="grid grid-cols-12 gap-0.5 md:gap-1 flex-1">
-          {[3,6,9,12,15,18,21,24,27,30,33,36].map((n) => (
-            <Cell
-              key={`col-${n}`}
-              label="2:1"
-              cellKey={`c-${n / 3}`}
-              onClick={() => onPlace({ kind: 'column', column: (n / 3) as any })}
-            />
-          ))}
-        </div>
-      </div>
-
       {/* ─── MAIN: 0/00 column + numbers + dozens ─── */}
       <div className="flex gap-1">
         {/* 0 / 00 column */}
