@@ -317,10 +317,49 @@ export default function CrashPage() {
 
   const cashout = useMutation({
     mutationFn: (roundId: string) => api.crashCashout(roundId),
-    onSuccess: async () => {
+    onSuccess: (data: any) => {
+      // — мгновенная визуальная обратная связь —
       crashedRef.current = true;
       stopLoops();
-      await finishRoundFromServer(null);
+
+      const active = roundRef.current;
+      const betAmount = active?.bet ?? 0;
+      const payout = Number(data.payout ?? 0);
+      const crashPoint = Number(data.crashPoint ?? multiplierRef.current);
+      const cashedAt = Number(data.cashedAt ?? multiplierRef.current);
+
+      // 1) Сразу показываем плашку WIN с цифрами из ответа
+      setMultiplier(cashedAt);
+      setLastResult({
+        won: true,
+        crashPoint,
+        cashedAt,
+        payout,
+        bet: betAmount,
+      });
+      setHistory((h) => [{
+        crashPoint,
+        cashedAt,
+        won: true,
+      }, ...h].slice(0, 12));
+
+      // 2) Обнуляем активную игру мгновенно
+      roundRef.current = null;
+      setRound(null);
+      setCrashed(false);
+
+      // 3) Обновляем баланс — сразу, из ответа
+      if (typeof data.balance === 'number') {
+        setBalance(data.balance);
+      }
+
+      // 4) Синхронизация кешей — в фоне, не блокирует UI
+      qc.invalidateQueries({ queryKey: ['wallet'] });
+      qc.invalidateQueries({ queryKey: ['me'] });
+      qc.invalidateQueries({ queryKey: ['missions'] });
+      qc.invalidateQueries({ queryKey: ['tournament'] });
+      qc.invalidateQueries({ queryKey: ['vip'] });
+      qc.invalidateQueries({ queryKey: ['crashHistory'] });
     },
     onError: (e: any) => toast.error(e.message),
   });

@@ -92,17 +92,28 @@ export default function RoulettePage() {
 
   return (
     <>
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
-        {/* Sidebar on mobile goes FIRST — order-first */}
-        <aside className="space-y-4 order-first lg:order-none">
-          <div className="rounded-2xl border border-border bg-panel p-4 space-y-3">
-            <div className="flex gap-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_360px]">
+        {/* ─── LEFT: wheel + betting table ─── */}
+        <div className="space-y-3 md:space-y-4 order-2 lg:order-1">
+          <div className="rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-2 md:p-4">
+            <RouletteWheel spinning={spinning} outcome={wheelOutcome} />
+          </div>
+          <div className="rounded-2xl border border-border bg-panel p-2 md:p-4">
+            <BettingTable chip={chip} bets={bets} onPlace={place} />
+          </div>
+        </div>
+
+        {/* ─── RIGHT (mobile: FIRST): controls + history + fairness ─── */}
+        <aside className="space-y-3 md:space-y-4 order-1 lg:order-2">
+          {/* Chip selector + Spin */}
+          <div className="rounded-2xl border border-border bg-panel p-3 md:p-4 space-y-3">
+            <div className="flex gap-1.5 md:gap-2">
               {[1, 5, 25, 100, 500].map((c) => (
                 <button
                   key={c}
                   onClick={() => setChip(c)}
                   disabled={spinning}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition disabled:opacity-50 ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-50 ${
                     chip === c
                       ? 'bg-gold text-black shadow-gold'
                       : 'bg-bg border border-border hover:border-gold'
@@ -110,32 +121,36 @@ export default function RoulettePage() {
                 >{c}</button>
               ))}
             </div>
-            <div className="text-sm flex justify-between">
+
+            <div className="text-sm flex justify-between items-center">
               <span className="text-gray-400">{t('bet')}</span>
-              <span className="text-gold font-bold">{total.toFixed(2)} RC</span>
+              <span className="text-gold font-bold text-lg">{total.toFixed(2)} RC</span>
             </div>
+
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={repeat} disabled={spinning}
-                className="py-2 rounded border border-border hover:border-neon text-sm disabled:opacity-50"
+                className="py-2.5 rounded-lg border border-border hover:border-neon text-xs md:text-sm disabled:opacity-50"
               >{t('repeat')}</button>
               <button
                 onClick={doubleBets} disabled={spinning}
-                className="py-2 rounded border border-border hover:border-neon text-sm disabled:opacity-50"
+                className="py-2.5 rounded-lg border border-border hover:border-neon text-xs md:text-sm disabled:opacity-50"
               >{t('double')}</button>
               <button
                 onClick={clear} disabled={spinning}
-                className="py-2 rounded border border-danger text-sm text-danger disabled:opacity-50"
+                className="py-2.5 rounded-lg border border-danger text-danger text-xs md:text-sm disabled:opacity-50"
               >{t('clear')}</button>
             </div>
+
             <button
               onClick={spin}
               disabled={spinning || !bets.length}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-neon to-accent font-bold disabled:opacity-50 shadow-neon"
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-neon to-accent font-black text-lg disabled:opacity-50 shadow-neon"
             >{spinning ? '…' : t('spin')}</button>
           </div>
 
-          <div className="rounded-2xl border border-border bg-panel p-4">
+          {/* History */}
+          <div className="rounded-2xl border border-border bg-panel p-3 md:p-4">
             <div className="text-xs text-gray-400 mb-2">{t('last_results')}</div>
             <div className="flex flex-wrap gap-1.5">
               <AnimatePresence initial={false}>
