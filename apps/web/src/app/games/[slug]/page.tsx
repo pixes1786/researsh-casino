@@ -15,6 +15,7 @@ export default function GameEntry() {
       'dice-x': '/games/dice',
       'crash-x': '/games/crash',
       'mines-rc': '/games/mines',
+      'gates-of-olympus': '/games/gates',
       'neon-fruits': '/games/slots',
       'aurora-blackjack': '/games/blackjack',
     };

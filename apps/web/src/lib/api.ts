@@ -140,6 +140,10 @@ export const api = {
   minesHistory: () => req<any[]>('/api/games/mines/history'),
   minesPaytable: (mines: number) => req<any>(`/api/games/mines/paytable/${mines}`),
 
+  gatesSpin: (bet: number) =>
+    req<any>('/api/games/gates/spin', { method: 'POST', body: JSON.stringify({ bet }) }),
+  gatesHistory: () => req<any[]>('/api/games/gates/history'),
+
   promoDaily: () => req<any>('/api/promo/daily'),
   promoClaimDaily: () => req<any>('/api/promo/daily/claim', { method: 'POST' }),
   promoMissions: () => req<any[]>('/api/promo/missions'),

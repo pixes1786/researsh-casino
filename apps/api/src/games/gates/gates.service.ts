@@ -177,6 +177,7 @@ export class GatesService {
       cascadeHistory.push({
         grid: [...grid],
         wins,
+        multipliers,
         multiplier: cascadeMultiplier,
         payout: cascadePayout,
       });
