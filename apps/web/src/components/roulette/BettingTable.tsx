@@ -25,9 +25,9 @@ function Chip({ amount }: { amount: number }) {
     <motion.span
       initial={{ scale: 0, y: -10 }}
       animate={{ scale: 1, y: 0 }}
-      className="pointer-events-none absolute inset-0 grid place-items-center"
+      className="pointer-events-none absolute inset-0 grid place-items-center z-10"
     >
-      <span className="min-w-[26px] h-[26px] px-1 rounded-full grid place-items-center text-[10px] font-black text-amber-900
+      <span className="min-w-[22px] h-[22px] md:min-w-[26px] md:h-[26px] px-0.5 rounded-full grid place-items-center text-[9px] md:text-[10px] font-black text-amber-900
         bg-gradient-to-br from-amber-200 via-yellow-300 to-amber-500
         border-2 border-amber-700 shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
         {amount >= 1000 ? `${(amount / 1000).toFixed(1)}k` : amount}
@@ -70,23 +70,24 @@ export function BettingTable({
   }) => {
     const sum = amountByKey.get(cellKey);
     return (
-      <motion.button
-        whileTap={{ scale: 0.94 }}
+      <button
+        type="button"
         onClick={onClick}
-        className={`relative border border-border/60 text-[10px] sm:text-xs font-semibold py-1.5 sm:py-2 px-1 sm:px-2 hover:brightness-125 transition ${className}`}
+        className={`relative border border-border/60 font-bold py-2 md:py-2.5 px-0 text-center select-none
+          hover:brightness-125 active:scale-95 transition text-[11px] md:text-xs ${className}`}
       >
         {label}
         {sum != null && <Chip amount={sum} />}
-      </motion.button>
+      </button>
     );
   };
 
   return (
-    <div className="select-none">
-      {/* columns 2:1 */}
+    <div className="select-none w-full">
+      {/* ─── TOP: column 2:1 row ─── */}
       <div className="flex gap-1 mb-1">
-        <div className="w-[88px]" />
-        <div className="grid grid-cols-12 flex-1 gap-1">
+        <div className="w-[44px] sm:w-[52px] md:w-[60px] shrink-0" />
+        <div className="grid grid-cols-12 gap-0.5 md:gap-1 flex-1">
           {[3,6,9,12,15,18,21,24,27,30,33,36].map((n) => (
             <Cell
               key={`col-${n}`}
@@ -98,25 +99,26 @@ export function BettingTable({
         </div>
       </div>
 
-      <div className="grid grid-cols-[88px_1fr_120px] gap-1">
-        {/* zeroes column: 0 (top) / 00 (bottom) */}
-        <div className="grid grid-rows-2 gap-1 w-[44px] sm:w-[56px]">
+      {/* ─── MAIN: 0/00 column + numbers + dozens ─── */}
+      <div className="flex gap-1">
+        {/* 0 / 00 column */}
+        <div className="w-[44px] sm:w-[52px] md:w-[60px] shrink-0 grid grid-rows-2 gap-0.5 md:gap-1">
           <Cell
             label="0"
             cellKey="s-0"
             onClick={() => onPlace({ kind: 'straight', number: 0 })}
-            className="bg-green-700 min-h-[60px] text-base font-black"
+            className="bg-green-700 text-base md:text-lg !font-black"
           />
           <Cell
             label="00"
             cellKey="s-37"
             onClick={() => onPlace({ kind: 'straight', number: 37 })}
-            className="bg-green-700 min-h-[60px] text-base font-black"
+            className="bg-green-700 text-base md:text-lg !font-black"
           />
         </div>
 
-        {/* 1..36 */}
-        <div className="grid grid-cols-12 gap-1">
+        {/* 1..36 — 12×3 grid, stretches to fill */}
+        <div className="grid grid-cols-12 gap-0.5 md:gap-1 flex-1">
           {numbers.map((n) => (
             <Cell
               key={n}
@@ -128,25 +130,26 @@ export function BettingTable({
           ))}
         </div>
 
-        {/* dozens */}
-        <div className="grid grid-rows-3 gap-1 w-[72px] sm:w-[100px]">
+        {/* dozens column */}
+        <div className="w-[80px] sm:w-[100px] md:w-[120px] shrink-0 grid grid-rows-3 gap-0.5 md:gap-1">
           <Cell label={t('dozen1')} cellKey="d-1" onClick={() => onPlace({ kind: 'dozen', dozen: 1 })} className="bg-zinc-900" />
           <Cell label={t('dozen2')} cellKey="d-2" onClick={() => onPlace({ kind: 'dozen', dozen: 2 })} className="bg-zinc-900" />
           <Cell label={t('dozen3')} cellKey="d-3" onClick={() => onPlace({ kind: 'dozen', dozen: 3 })} className="bg-zinc-900" />
         </div>
       </div>
 
-      <div className="grid grid-cols-6 gap-1 mt-1">
+      {/* ─── BOTTOM: six 1:1 bets ─── */}
+      <div className="grid grid-cols-6 gap-0.5 md:gap-1 mt-1">
         <Cell label={t('low')}   cellKey="low"   onClick={() => onPlace({ kind: 'low' })}   className="bg-zinc-900" />
         <Cell label={t('even')}  cellKey="even"  onClick={() => onPlace({ kind: 'even' })}  className="bg-zinc-900" />
         <Cell label={t('red')}   cellKey="red"   onClick={() => onPlace({ kind: 'red' })}   className="bg-red-700" />
-        <Cell label={t('black')} cellKey="black" onClick={() => onPlace({ kind: 'black' })} className="bg-zinc-950 border-zinc-700" />
+        <Cell label={t('black')} cellKey="black" onClick={() => onPlace({ kind: 'black' })} className="bg-zinc-950" />
         <Cell label={t('odd')}   cellKey="odd"   onClick={() => onPlace({ kind: 'odd' })}   className="bg-zinc-900" />
         <Cell label={t('high')}  cellKey="high"  onClick={() => onPlace({ kind: 'high' })}  className="bg-zinc-900" />
       </div>
 
-      <div className="text-[11px] text-gray-500 mt-2">
-        Chip: <span className="text-gold font-bold">{chip} RC</span> · клик на ячейку = добавить ставку
+      <div className="text-[10px] md:text-[11px] text-gray-500 mt-2">
+        Chip: <span className="text-gold font-bold">{chip} RC</span> · tap a cell to add bet
       </div>
     </div>
   );

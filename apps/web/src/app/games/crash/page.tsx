@@ -316,39 +316,54 @@ export default function CrashPage() {
   });
 
   const cashout = useMutation({
-    mutationFn: (roundId: string) => api.crashCashout(roundId),
-    onSuccess: (data: any) => {
-      // — everything synchronous, no awaits, no second request —
+    // NOTE: onMutate fires IMMEDIATELY on click, before server responds.
+    // We optimistically stop the animation and show the win banner instantly.
+    onMutate: () => {
+      const active = roundRef.current;
+      if (!active) return {};
       crashedRef.current = true;
       stopLoops();
 
-      const active = roundRef.current;
-      const betAmount = active?.bet ?? 0;
-      const payout = Number(data.payout ?? 0);
-      const crashPoint = Number(data.crashPoint ?? 0);
-      const cashedAt = Number(data.cashedAt ?? 0);
+      const snapshotMultiplier = multiplierRef.current;
+      const snapshotBet = active.bet;
+      const snapshotPayout = Number((snapshotBet * snapshotMultiplier).toFixed(4));
 
-      // 1. Instant visual state
-      multiplierRef.current = cashedAt;
-      setMultiplier(cashedAt);
-      setCrashed(false);
+      // Show "cashing out…" banner immediately
+      setMultiplier(snapshotMultiplier);
+      setLastResult({
+        won: true,
+        crashPoint: 0,          // unknown yet
+        cashedAt: snapshotMultiplier,
+        payout: snapshotPayout,
+        bet: snapshotBet,
+      });
+      setRound(null);
+      roundRef.current = null;
+
+      return { snapshotMultiplier, snapshotBet, snapshotPayout, roundId: active.roundId };
+    },
+
+    mutationFn: (roundId: string) => api.crashCashout(roundId),
+
+    onSuccess: (data: any, _vars, ctx: any) => {
+      const active = ctx ?? {};
+      const payout = Number(data.payout ?? active.snapshotPayout ?? 0);
+      const cashedAt = Number(data.cashedAt ?? active.snapshotMultiplier ?? 0);
+      const crashPoint = Number(data.crashPoint ?? 0);
+
+      // Confirm with server's authoritative numbers
       setLastResult({
         won: true,
         crashPoint,
         cashedAt,
         payout,
-        bet: betAmount,
+        bet: active.snapshotBet ?? 0,
       });
+      setMultiplier(cashedAt);
       setHistory((h) => [{ crashPoint, cashedAt, won: true }, ...h].slice(0, 12));
 
-      // 2. Drop active round immediately — CASH OUT button disappears
-      roundRef.current = null;
-      setRound(null);
-
-      // 3. Balance from response — immediate
       if (typeof data.balance === 'number') setBalance(data.balance);
 
-      // 4. Background cache sync (does not affect UI)
       qc.invalidateQueries({ queryKey: ['wallet'] });
       qc.invalidateQueries({ queryKey: ['me'] });
       qc.invalidateQueries({ queryKey: ['missions'] });
@@ -356,16 +371,25 @@ export default function CrashPage() {
       qc.invalidateQueries({ queryKey: ['vip'] });
       qc.invalidateQueries({ queryKey: ['crashHistory'] });
     },
-    onError: (e: any) => toast.error(e.message),
+
+    onError: (e: any, _vars, ctx: any) => {
+      // Server said too late — the crash already fired. Show LOSS.
+      toast.error('Too late — crash already happened');
+      setLastResult({
+        won: false,
+        crashPoint: 0,
+        cashedAt: null,
+        payout: 0,
+        bet: ctx?.snapshotBet ?? 0,
+      });
+      qc.invalidateQueries({ queryKey: ['wallet'] });
+      qc.invalidateQueries({ queryKey: ['crashHistory'] });
+    },
   });
 
   const handleCashout = () => {
-    if (!round || busy || crashed) return;
-    // Optimistically show "cashing out…" state on the button
-    setBusy(true);
-    cashout.mutate(round.roundId, {
-      onSettled: () => setBusy(false),
-    });
+    if (!round || crashed) return;
+    cashout.mutate(round.roundId);
   };
 
   const handleStart = () => {
