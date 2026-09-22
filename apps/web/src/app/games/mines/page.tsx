@@ -132,7 +132,7 @@ export default function MinesPage() {
   const isSettled = state?.phase === 'busted' || state?.phase === 'cashed';
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
         {/* Grid */}
         <div className="relative rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-4 md:p-6">

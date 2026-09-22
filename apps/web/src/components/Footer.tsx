@@ -4,7 +4,7 @@ import Link from 'next/link';
 export function Footer() {
   return (
     <footer className="mt-16 border-t border-border bg-panel/60">
-      <div className="mx-auto max-w-7xl px-4 py-8 grid gap-6 md:grid-cols-4 text-sm text-gray-400">
+      <div className="mx-auto max-w-7xl px-4 py-6 md:py-8 grid grid-cols-2 gap-4 md:grid-cols-4 text-sm text-gray-400">
         <div>
           <div className="font-bold text-white mb-2">Research Casino</div>
           <p className="text-xs">Research prototype. Virtual currency only. No real-money gambling.</p>

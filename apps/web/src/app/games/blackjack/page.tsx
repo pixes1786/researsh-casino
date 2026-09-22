@@ -99,7 +99,7 @@ export default function BlackjackPage() {
   const isSettled = state?.phase === 'settled';
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
         {/* Table */}
         <div

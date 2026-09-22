@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <Providers>
           <Header />
-          <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+          <main className="mx-auto max-w-7xl px-3 md:px-4 py-4 md:py-6">{children}</main>
           <Footer />
           <DailyBonusPopup />
         </Providers>

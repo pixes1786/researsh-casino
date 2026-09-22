@@ -92,17 +92,9 @@ export default function RoulettePage() {
 
   return (
     <>
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-4">
-            <RouletteWheel spinning={spinning} outcome={wheelOutcome} />
-          </div>
-          <div className="rounded-2xl border border-border bg-panel p-4">
-            <BettingTable chip={chip} bets={bets} onPlace={place} />
-          </div>
-        </div>
-
-        <aside className="space-y-4">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
+        {/* Sidebar on mobile goes FIRST — order-first */}
+        <aside className="space-y-4 order-first lg:order-none">
           <div className="rounded-2xl border border-border bg-panel p-4 space-y-3">
             <div className="flex gap-2">
               {[1, 5, 25, 100, 500].map((c) => (

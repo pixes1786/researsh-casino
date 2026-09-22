@@ -341,7 +341,7 @@ export default function CrashPage() {
   useEffect(() => () => stopLoops(), []);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
         <div className="relative rounded-2xl border border-border bg-gradient-to-b from-panel to-bg overflow-hidden">
           <div className="relative aspect-[720/320] w-full">

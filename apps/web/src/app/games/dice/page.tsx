@@ -119,7 +119,7 @@ export default function SpeedometerPage() {
   const MARKER_HEIGHT_PCT = (((R_OUT - R_IN) / SIZE) * 100).toFixed(3);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-4 relative overflow-hidden">
           <div className="relative w-full mx-auto aspect-square" style={{ maxWidth: 520 }}>

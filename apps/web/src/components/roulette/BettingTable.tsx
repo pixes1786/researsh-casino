@@ -73,7 +73,7 @@ export function BettingTable({
       <motion.button
         whileTap={{ scale: 0.94 }}
         onClick={onClick}
-        className={`relative border border-border/60 text-xs font-semibold py-2 px-2 hover:brightness-125 transition ${className}`}
+        className={`relative border border-border/60 text-[10px] sm:text-xs font-semibold py-1.5 sm:py-2 px-1 sm:px-2 hover:brightness-125 transition ${className}`}
       >
         {label}
         {sum != null && <Chip amount={sum} />}
@@ -100,7 +100,7 @@ export function BettingTable({
 
       <div className="grid grid-cols-[88px_1fr_120px] gap-1">
         {/* zeroes column: 0 (top) / 00 (bottom) */}
-        <div className="grid grid-rows-2 gap-1">
+        <div className="grid grid-rows-2 gap-1 w-[44px] sm:w-[56px]">
           <Cell
             label="0"
             cellKey="s-0"
@@ -129,7 +129,7 @@ export function BettingTable({
         </div>
 
         {/* dozens */}
-        <div className="grid grid-rows-3 gap-1">
+        <div className="grid grid-rows-3 gap-1 w-[72px] sm:w-[100px]">
           <Cell label={t('dozen1')} cellKey="d-1" onClick={() => onPlace({ kind: 'dozen', dozen: 1 })} className="bg-zinc-900" />
           <Cell label={t('dozen2')} cellKey="d-2" onClick={() => onPlace({ kind: 'dozen', dozen: 2 })} className="bg-zinc-900" />
           <Cell label={t('dozen3')} cellKey="d-3" onClick={() => onPlace({ kind: 'dozen', dozen: 3 })} className="bg-zinc-900" />

@@ -145,9 +145,9 @@ export default function SlotsPage() {
   const anyWin = useMemo(() => !!result && result.totalWin > 0, [result]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_340px]">
       <div className="space-y-4">
-        <div className="relative rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-6 overflow-hidden">
+        <div className="relative rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-3 md:p-6 overflow-hidden">
           <div className="relative mx-auto" style={{ maxWidth: 520 }}>
             {/* paylines legend */}
             <div className="flex justify-center gap-1 flex-wrap mb-3 text-[10px] text-gray-500">

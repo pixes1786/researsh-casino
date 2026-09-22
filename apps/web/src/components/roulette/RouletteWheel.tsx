@@ -60,7 +60,7 @@ export function RouletteWheel({ spinning, outcome }: { spinning: boolean; outcom
   }, [outcome]);
 
   return (
-    <div className="relative w-full max-w-[600px] mx-auto">
+    <div className="relative w-full max-w-[340px] sm:max-w-[460px] md:max-w-[600px] mx-auto">
       <div className="relative aspect-square w-full">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <div className="w-0 h-0 border-l-[14px] border-r-[14px] border-t-[28px] border-l-transparent border-r-transparent border-t-gold drop-shadow-[0_0_10px_rgba(245,197,66,0.9)]" />

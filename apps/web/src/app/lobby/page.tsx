@@ -28,7 +28,7 @@ export default function LobbyPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search…"
-          className="ml-auto bg-panel border border-border rounded px-3 py-1.5 text-sm"
+          className="w-full sm:w-auto sm:ml-auto bg-panel border border-border rounded px-3 py-1.5 text-sm"
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
