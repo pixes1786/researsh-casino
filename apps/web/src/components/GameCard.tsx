@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 
 const EMOJI_BY_SLUG: Record<string, string> = {
   'dice-x': '⏱️',
-  'gates-of-olympus': '⚡',
 };
 
 const EMOJI: Record<string, string> = {

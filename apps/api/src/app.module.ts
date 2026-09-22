@@ -11,7 +11,6 @@ import { CrashModule } from './games/crash/crash.module';
 import { SlotsModule } from './games/slots/slots.module';
 import { BlackjackModule } from './games/blackjack/blackjack.module';
 import { MinesModule } from './games/mines/mines.module';
-import { GatesModule } from './games/gates/gates.module';
 import { LiveModule } from './live/live.module';
 import { MeModule } from './me/me.module';
 import { AdminModule } from './admin/admin.module';
@@ -48,7 +47,6 @@ import { HealthModule } from './health/health.module';
     SlotsModule,
     BlackjackModule,
     MinesModule,
-    GatesModule,
     LiveModule,
     MeModule,
     AdminModule,
