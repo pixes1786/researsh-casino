@@ -123,6 +123,13 @@ export const api = {
     req<any>('/api/games/slots/spin', { method: 'POST', body: JSON.stringify({ bet }) }),
   slotsVerify: (roundId: string) => req<any>(`/api/games/slots/verify/${roundId}`),
 
+  blackjackStart: (bet: number) =>
+    req<any>('/api/games/blackjack/start', { method: 'POST', body: JSON.stringify({ bet }) }),
+  blackjackAction: (gameId: string, action: 'hit' | 'stand' | 'double' | 'split') =>
+    req<any>('/api/games/blackjack/action', { method: 'POST', body: JSON.stringify({ gameId, action }) }),
+  blackjackCurrent: () => req<any>('/api/games/blackjack/current'),
+  blackjackHistory: () => req<any[]>('/api/games/blackjack/history'),
+
   promoDaily: () => req<any>('/api/promo/daily'),
   promoClaimDaily: () => req<any>('/api/promo/daily/claim', { method: 'POST' }),
   promoMissions: () => req<any[]>('/api/promo/missions'),

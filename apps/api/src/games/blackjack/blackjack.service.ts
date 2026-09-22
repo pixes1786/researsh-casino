@@ -65,9 +65,25 @@ export class BlackjackService {
       throw new BadRequestException('BAD_BET');
     }
 
-    // Reject if an unsettled game exists
-    const existing = await this.prisma.gameRound.findFirst({
+    // Auto-settle any stale game (>5 min old — user closed the tab)
+    const stale = await this.prisma.gameRound.findMany({
       where: { userId, settledAt: null, game: { slug: 'aurora-blackjack' } },
+    });
+    for (const s of stale) {
+      const age = Date.now() - s.createdAt.getTime();
+      if (age > 5 * 60 * 1000) {
+        await this.forceSettleStale(s.id);
+      }
+    }
+
+    // Reject only if a truly live game exists
+    const existing = await this.prisma.gameRound.findFirst({
+      where: {
+        userId,
+        settledAt: null,
+        game: { slug: 'aurora-blackjack' },
+        createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) },
+      },
     });
     if (existing) throw new BadRequestException('GAME_IN_PROGRESS');
 
@@ -370,6 +386,22 @@ export class BlackjackService {
     }
 
     return this.publicState(roundId, state, finalBalance, false);
+  }
+
+  // ─────────────────── STALE AUTO-SETTLE ───────────────────
+  // User closed tab mid-game. Dealer plays out, hands settled as-is.
+  private async forceSettleStale(roundId: string) {
+    const round = await this.prisma.gameRound.findUniqueOrThrow({ where: { id: roundId } });
+    if (round.settledAt) return;
+    const state = round.result as unknown as BJState;
+    const w = await this.prisma.wallet.findUniqueOrThrow({ where: { userId: round.userId! } });
+    await this.settle(
+      round.userId!,
+      round.id,
+      state,
+      { serverSeed: round.serverSeed, clientSeed: round.clientSeed, nonce: round.nonce },
+      Number(w.balance),
+    );
   }
 
   // ─────────────────── STATE ───────────────────
