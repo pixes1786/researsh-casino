@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 
 type Status = 'loading' | 'success' | 'error';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const search = useSearchParams();
   const qc = useQueryClient();
@@ -27,7 +27,6 @@ export default function VerifyEmailPage() {
       .then(() => {
         setStatus('success');
         qc.invalidateQueries({ queryKey: ['me'] });
-        // soft redirect to lobby after 2.5s
         setTimeout(() => router.push('/lobby'), 2500);
       })
       .catch((e: any) => {
@@ -35,10 +34,15 @@ export default function VerifyEmailPage() {
         try {
           const parsed = JSON.parse(e.message);
           const code = parsed.message ?? parsed.error ?? '';
-          if (code.includes('TOKEN_ALREADY_USED')) setMessage('Этот токен уже был использован. Войдите в аккаунт — email уже подтверждён.');
-          else if (code.includes('TOKEN_EXPIRED')) setMessage('Ссылка истекла. Запросите новое письмо из профиля.');
-          else if (code.includes('TOKEN_NOT_FOUND')) setMessage('Токен не найден. Возможно, ссылка повреждена.');
-          else setMessage('Не удалось подтвердить email.');
+          if (code.includes('TOKEN_ALREADY_USED')) {
+            setMessage('Этот токен уже был использован. Войдите в аккаунт — email уже подтверждён.');
+          } else if (code.includes('TOKEN_EXPIRED')) {
+            setMessage('Ссылка истекла. Запросите новое письмо из профиля.');
+          } else if (code.includes('TOKEN_NOT_FOUND')) {
+            setMessage('Токен не найден. Возможно, ссылка повреждена.');
+          } else {
+            setMessage('Не удалось подтвердить email.');
+          }
         } catch {
           setMessage('Не удалось подтвердить email.');
         }
@@ -119,5 +123,20 @@ export default function VerifyEmailPage() {
         Research prototype. Virtual currency only. No real-money gambling.
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto mt-16 text-center text-gray-400">
+          <div className="text-5xl mb-4 animate-pulse">📧</div>
+          <p>Загрузка…</p>
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
