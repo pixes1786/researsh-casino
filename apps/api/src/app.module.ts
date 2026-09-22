@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { PromoModule } from './promo/promo.module';
 import { SecurityModule } from './security/security.module';
 import { CaptchaModule } from './captcha/captcha.module';
+import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
 
 /*
@@ -53,6 +54,7 @@ import { HealthModule } from './health/health.module';
     PromoModule,
     SecurityModule,
     CaptchaModule,
+    EmailModule,
     HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

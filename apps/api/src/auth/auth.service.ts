@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto';
 import { MfaService } from './mfa.service';
 import { SecurityService } from '../security/security.service';
+import { EmailService } from '../email/email.service';
 
 const ARGON_OPTS: argon2.Options = {
   type: argon2.argon2id,
@@ -33,6 +34,7 @@ export class AuthService {
     private jwt: JwtService,
     private mfa: MfaService,
     private security: SecurityService,
+    private email: EmailService,
   ) {}
 
   // ─────────────────────── public ───────────────────────
@@ -77,6 +79,8 @@ export class AuthService {
       severity: 'info',
       meta: { email: user.email },
     });
+
+    this.sendVerificationEmail(user.id, user.email, user.username).catch(() => {});
 
     const access = this.issueTokens(user.id, user.email, user.role, false);
     const deviceToken = await this.issueDeviceToken(user.id, ip, ua);
@@ -282,6 +286,7 @@ export class AuthService {
       role: user.role,
       kycStatus: user.kycStatus,
       mfaEnabled: user.mfaEnabled,
+      emailVerified: user.emailVerified,
       balance: Number(user.wallet?.balance ?? 0),
       currency: user.wallet?.currency ?? 'RC',
       locale: user.profile?.locale ?? 'ru',
@@ -311,4 +316,67 @@ export class AuthService {
     });
     return raw;
   }
+
+  // ─────────── EMAIL VERIFICATION ───────────
+
+  private hashToken(raw: string): string {
+    return createHash('sha256').update(raw).digest('hex');
+  }
+
+  private async sendVerificationEmail(userId: string, email: string, username: string) {
+    const raw = randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(raw);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.prisma.emailVerificationToken.updateMany({
+      where: { userId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    await this.prisma.emailVerificationToken.create({
+      data: { userId, tokenHash, expiresAt },
+    });
+
+    const frontendUrl = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+    const verifyUrl = `${frontendUrl}/verify-email?token=${raw}`;
+
+    await this.email.sendVerification(email, username, verifyUrl);
+  }
+
+  async resendVerification(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (user.emailVerified) return { ok: true, alreadyVerified: true };
+    await this.sendVerificationEmail(user.id, user.email, user.username);
+    return { ok: true };
+  }
+
+  async verifyEmail(rawToken: string) {
+    if (!rawToken || rawToken.length < 32) throw new BadRequestException('BAD_TOKEN');
+    const tokenHash = this.hashToken(rawToken);
+
+    const row = await this.prisma.emailVerificationToken.findUnique({ where: { tokenHash } });
+    if (!row) throw new BadRequestException('TOKEN_NOT_FOUND');
+    if (row.usedAt) throw new BadRequestException('TOKEN_ALREADY_USED');
+    if (row.expiresAt < new Date()) throw new BadRequestException('TOKEN_EXPIRED');
+
+    await this.prisma.$transaction([
+      this.prisma.emailVerificationToken.update({
+        where: { id: row.id },
+        data: { usedAt: new Date() },
+      }),
+      this.prisma.user.update({
+        where: { id: row.userId },
+        data: { emailVerified: true },
+      }),
+    ]);
+
+    await this.security.track('email_verified', {
+      userId: row.userId,
+      severity: 'info',
+      meta: {},
+    });
+
+    return { ok: true };
+  }
+
 }

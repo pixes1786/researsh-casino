@@ -13,7 +13,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, MfaCodeDto } from './dto';
+import { LoginDto, RegisterDto, MfaCodeDto, VerifyEmailDto } from './dto';
 import { MfaService } from './mfa.service';
 import { CaptchaService } from '../captcha/captcha.service';
 import { JwtGuard } from '../common/jwt.guard';
@@ -144,6 +144,21 @@ export class AuthController {
   @Throttle({ auth: { limit: 10, ttl: 60_000 } })
   disable(@CurrentUser() u: any, @Body() dto: MfaCodeDto) {
     return this.mfa.disable(u.sub, dto.code);
+  }
+
+  // ─── email verification ───
+
+  @Post('verify-email')
+  @Throttle({ auth: { limit: 20, ttl: 60_000 } })
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.auth.verifyEmail(dto.token);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(JwtGuard)
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  async resendVerification(@CurrentUser() u: any) {
+    return this.auth.resendVerification(u.sub);
   }
 
   // ─── helpers ───

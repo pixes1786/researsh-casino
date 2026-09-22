@@ -23,3 +23,7 @@ export class MfaDisableDto {
   @IsString() @Length(6, 8) code!: string;
   @IsOptional() confirm?: boolean;
 }
+
+export class VerifyEmailDto {
+  @IsString() @Length(32, 128) token!: string;
+}
