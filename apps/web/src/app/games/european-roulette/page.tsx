@@ -100,7 +100,7 @@ export default function RoulettePage() {
         </div>
 
         {/* ─── 2. CHIPS + SPIN — mobile: 2nd, desktop: right-top ─── */}
-        <div className="order-2 lg:col-start-2 lg:row-start-1 rounded-2xl border border-border bg-panel p-3 md:p-4 space-y-3">
+        <div className="order-3 lg:col-start-2 lg:row-start-1 rounded-2xl border border-border bg-panel p-3 md:p-4 space-y-3">
           <div className="flex gap-1.5 md:gap-2">
             {[1, 5, 25, 100, 500].map((c) => (
               <button
@@ -136,7 +136,7 @@ export default function RoulettePage() {
         </div>
 
         {/* ─── 3. BETTING TABLE — mobile: 3rd, desktop: left-bottom ─── */}
-        <div className="order-3 lg:col-start-1 lg:row-start-2 rounded-2xl border border-border bg-panel p-2 md:p-4">
+        <div className="order-2 lg:col-start-1 lg:row-start-2 rounded-2xl border border-border bg-panel p-2 md:p-4">
           <BettingTable chip={chip} bets={bets} onPlace={place} />
         </div>
 
