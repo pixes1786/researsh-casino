@@ -51,6 +51,9 @@ export class AuthService {
         email: dto.email,
         username: dto.username,
         passwordHash,
+        // EMAIL VERIFICATION DISABLED — auto-verified for research prototype.
+        // Re-enable by setting to false and restoring sendVerificationEmail below.
+        emailVerified: true,
         profile: { create: {} },
         wallet: { create: { currency: 'RC', balance: 0 } },
       },
@@ -80,7 +83,8 @@ export class AuthService {
       meta: { email: user.email },
     });
 
-    this.sendVerificationEmail(user.id, user.email, user.username).catch(() => {});
+    // EMAIL VERIFICATION DISABLED
+    // this.sendVerificationEmail(user.id, user.email, user.username).catch(() => {});
 
     const access = this.issueTokens(user.id, user.email, user.role, false);
     const deviceToken = await this.issueDeviceToken(user.id, ip, ua);
