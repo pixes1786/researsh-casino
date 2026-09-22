@@ -130,6 +130,16 @@ export const api = {
   blackjackCurrent: () => req<any>('/api/games/blackjack/current'),
   blackjackHistory: () => req<any[]>('/api/games/blackjack/history'),
 
+  minesStart: (bet: number, minesCount: number) =>
+    req<any>('/api/games/mines/start', { method: 'POST', body: JSON.stringify({ bet, minesCount }) }),
+  minesReveal: (gameId: string, position: number) =>
+    req<any>('/api/games/mines/reveal', { method: 'POST', body: JSON.stringify({ gameId, position }) }),
+  minesCashout: (gameId: string) =>
+    req<any>('/api/games/mines/cashout', { method: 'POST', body: JSON.stringify({ gameId }) }),
+  minesCurrent: () => req<any>('/api/games/mines/current'),
+  minesHistory: () => req<any[]>('/api/games/mines/history'),
+  minesPaytable: (mines: number) => req<any>(`/api/games/mines/paytable/${mines}`),
+
   promoDaily: () => req<any>('/api/promo/daily'),
   promoClaimDaily: () => req<any>('/api/promo/daily/claim', { method: 'POST' }),
   promoMissions: () => req<any[]>('/api/promo/missions'),
