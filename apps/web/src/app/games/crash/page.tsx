@@ -318,18 +318,20 @@ export default function CrashPage() {
   const cashout = useMutation({
     mutationFn: (roundId: string) => api.crashCashout(roundId),
     onSuccess: (data: any) => {
-      // — мгновенная визуальная обратная связь —
+      // — everything synchronous, no awaits, no second request —
       crashedRef.current = true;
       stopLoops();
 
       const active = roundRef.current;
       const betAmount = active?.bet ?? 0;
       const payout = Number(data.payout ?? 0);
-      const crashPoint = Number(data.crashPoint ?? multiplierRef.current);
-      const cashedAt = Number(data.cashedAt ?? multiplierRef.current);
+      const crashPoint = Number(data.crashPoint ?? 0);
+      const cashedAt = Number(data.cashedAt ?? 0);
 
-      // 1) Сразу показываем плашку WIN с цифрами из ответа
+      // 1. Instant visual state
+      multiplierRef.current = cashedAt;
       setMultiplier(cashedAt);
+      setCrashed(false);
       setLastResult({
         won: true,
         crashPoint,
@@ -337,23 +339,16 @@ export default function CrashPage() {
         payout,
         bet: betAmount,
       });
-      setHistory((h) => [{
-        crashPoint,
-        cashedAt,
-        won: true,
-      }, ...h].slice(0, 12));
+      setHistory((h) => [{ crashPoint, cashedAt, won: true }, ...h].slice(0, 12));
 
-      // 2) Обнуляем активную игру мгновенно
+      // 2. Drop active round immediately — CASH OUT button disappears
       roundRef.current = null;
       setRound(null);
-      setCrashed(false);
 
-      // 3) Обновляем баланс — сразу, из ответа
-      if (typeof data.balance === 'number') {
-        setBalance(data.balance);
-      }
+      // 3. Balance from response — immediate
+      if (typeof data.balance === 'number') setBalance(data.balance);
 
-      // 4) Синхронизация кешей — в фоне, не блокирует UI
+      // 4. Background cache sync (does not affect UI)
       qc.invalidateQueries({ queryKey: ['wallet'] });
       qc.invalidateQueries({ queryKey: ['me'] });
       qc.invalidateQueries({ queryKey: ['missions'] });
@@ -366,9 +361,11 @@ export default function CrashPage() {
 
   const handleCashout = () => {
     if (!round || busy || crashed) return;
+    // Optimistically show "cashing out…" state on the button
     setBusy(true);
-    cashout.mutate(round.roundId);
-    setTimeout(() => setBusy(false), 200);
+    cashout.mutate(round.roundId, {
+      onSettled: () => setBusy(false),
+    });
   };
 
   const handleStart = () => {
@@ -452,9 +449,9 @@ export default function CrashPage() {
             >{start.isPending ? '…' : `START  ·  ${bet.toFixed(2)} RC`}</button>
           ) : (
             <button
-              onClick={handleCashout} disabled={cashout.isPending || busy || crashed}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-success to-emerald-500 text-black font-black text-lg disabled:opacity-50 shadow-[0_0_30px_rgba(34,197,94,0.5)]"
-            >CASH OUT  ·  {(round.bet * multiplier).toFixed(2)} RC</button>
+              onClick={handleCashout} disabled={cashout.isPending || busy}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-success to-emerald-500 text-black font-black text-lg disabled:opacity-60 shadow-[0_0_30px_rgba(34,197,94,0.5)]"
+            >{cashout.isPending ? 'CASHING OUT…' : `CASH OUT  ·  ${(round.bet * multiplier).toFixed(2)} RC`}</button>
           )}
         </div>
       </div>
