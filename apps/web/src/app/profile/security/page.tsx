@@ -188,6 +188,8 @@ export default function SecurityPage() {
         )}
       </motion.section>
 
+      <EmailVerificationCard />
+
       <DevicesSection />
     </div>
   );
@@ -269,6 +271,76 @@ function DevicesSection() {
           <div className="text-xs text-gray-500 text-center py-4">No active devices</div>
         )}
       </div>
+    </motion.section>
+  );
+}
+
+
+
+function EmailVerificationCard() {
+  const { user } = useSession();
+  const qc = useQueryClient();
+  const resend = useMutation({
+    mutationFn: () => api.resendVerification(),
+    onSuccess: (res) => {
+      if (res.alreadyVerified) {
+        toast.success('Email уже подтверждён');
+        qc.invalidateQueries({ queryKey: ['me'] });
+      } else {
+        toast.success('Письмо отправлено');
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (!user) return null;
+  const verified = !!user.emailVerified;
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`rounded-2xl border p-6 space-y-3 ${
+        verified ? 'border-success/40 bg-success/5' : 'border-gold/50 bg-gold/5'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-lg font-bold">Email verification</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {user.email}
+          </div>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+          verified
+            ? 'bg-success/20 border border-success/50 text-success'
+            : 'bg-gold/20 border border-gold/60 text-gold'
+        }`}>
+          {verified ? '✓ VERIFIED' : '⚠ UNVERIFIED'}
+        </span>
+      </div>
+
+      {!verified && (
+        <>
+          <p className="text-sm text-gray-300">
+            Подтверди email — так мы знаем, что ты реальный пользователь.
+            Пока не подтверждён — можешь играть, но некоторые функции будут ограничены.
+          </p>
+          <button
+            onClick={() => resend.mutate()}
+            disabled={resend.isPending}
+            className="px-4 py-2 rounded-lg bg-gold text-black font-bold text-sm disabled:opacity-50 hover:brightness-110 transition"
+          >
+            {resend.isPending ? '…' : 'Отправить письмо заново'}
+          </button>
+        </>
+      )}
+
+      {verified && (
+        <p className="text-sm text-success">
+          Твой email подтверждён.
+        </p>
+      )}
     </motion.section>
   );
 }

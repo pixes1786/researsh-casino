@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useSession } from '@/lib/store';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { EmailVerificationBanner } from './EmailVerificationBanner';
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -191,6 +192,9 @@ export function Header() {
           Research prototype. Virtual currency only. No real-money gambling.
         </div>
       </header>
+
+      {/* Email verification banner — appears only for logged-in, unverified users */}
+      <EmailVerificationBanner />
 
       {/* Mobile drawer */}
       {drawerOpen && (

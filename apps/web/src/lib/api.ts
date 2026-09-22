@@ -67,6 +67,10 @@ export const api = {
   register: (b: any) => req('/api/auth/register', { method: 'POST', body: JSON.stringify(b) }),
   login: (b: any) => req('/api/auth/login', { method: 'POST', body: JSON.stringify(b) }),
   logout: () => req('/api/auth/logout', { method: 'POST' }),
+  verifyEmail: (token: string) =>
+    req<{ ok: boolean }>('/api/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }) }),
+  resendVerification: () =>
+    req<{ ok: boolean; alreadyVerified?: boolean }>('/api/auth/resend-verification', { method: 'POST' }),
   deviceLogin: () => req<{ ok: boolean }>('/api/auth/device-login', { method: 'POST' }),
   listDevices: () => req<any[]>('/api/auth/devices'),
   revokeDevice: (id: string) => req(`/api/auth/devices/${id}`, { method: 'DELETE' }),
