@@ -9,6 +9,7 @@ import { RouletteModule } from './games/roulette/roulette.module';
 import { DiceModule } from './games/dice/dice.module';
 import { CrashModule } from './games/crash/crash.module';
 import { SlotsModule } from './games/slots/slots.module';
+import { BlackjackModule } from './games/blackjack/blackjack.module';
 import { LiveModule } from './live/live.module';
 import { MeModule } from './me/me.module';
 import { AdminModule } from './admin/admin.module';
@@ -38,6 +39,7 @@ const storage = makeRedisStorage();
     DiceModule,
     CrashModule,
     SlotsModule,
+    BlackjackModule,
     LiveModule,
     MeModule,
     AdminModule,
