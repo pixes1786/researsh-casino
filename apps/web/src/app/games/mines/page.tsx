@@ -44,8 +44,8 @@ export default function MinesPage() {
     enabled: minesCount >= MINES_MIN && minesCount <= MINES_MAX,
   });
 
-  const multipliersByPick = useMemo(() => {
-    return (paytable.data?.steps ?? []).map((s: any) => s.multiplier);
+  const multipliersByPick = useMemo<number[]>(() => {
+    return (paytable.data?.steps ?? []).map((s: { picks: number; multiplier: number }) => s.multiplier);
   }, [paytable.data]);
 
   const hist = useQuery({ queryKey: ['minesHistory'], queryFn: api.minesHistory });
@@ -300,7 +300,7 @@ export default function MinesPage() {
         <div className="rounded-2xl border border-border bg-panel p-4 text-xs space-y-2">
           <div className="font-semibold text-sm">Paytable · {minesCount} mines</div>
           <div className="grid grid-cols-2 gap-1">
-            {multipliersByPick.slice(0, 10).map((m, i) => (
+            {multipliersByPick.slice(0, 10).map((m: number, i: number) => (
               <div key={i} className="flex justify-between rounded bg-black/30 border border-border px-2 py-1">
                 <span className="text-gray-500">{i + 1} pick{i > 0 ? 's' : ''}</span>
                 <span className="text-gold font-bold">{m.toFixed(2)}×</span>
