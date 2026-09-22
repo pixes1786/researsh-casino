@@ -18,20 +18,25 @@ import { PromoModule } from './promo/promo.module';
 import { SecurityModule } from './security/security.module';
 import { CaptchaModule } from './captcha/captcha.module';
 import { HealthModule } from './health/health.module';
-import { makeRedisStorage } from './throttler/redis-throttler.module';
 
-const storage = makeRedisStorage();
+/*
+ * NOTE: Redis storage for throttler disabled to save Upstash quota.
+ * Currently the API runs as a single instance on Render Free — in-memory
+ * counters are sufficient. Rate limits reset on each restart (acceptable
+ * for a research prototype). To re-enable Redis storage, restore:
+ *
+ *   import { makeRedisStorage } from './throttler/redis-throttler.module';
+ *   const storage = makeRedisStorage();
+ *   ...ThrottlerModule.forRoot({ ...(storage ? { storage } : {}) })
+ */
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot({
-      throttlers: [
-        { name: 'default', ttl: 60_000, limit: 1000 },
-        { name: 'auth',    ttl: 60_000, limit: 30   },
-        { name: 'wallet',  ttl: 60_000, limit: 200  },
-      ],
-      ...(storage ? { storage } : {}),
-    }),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60_000, limit: 1000 },
+      { name: 'auth',    ttl: 60_000, limit: 30   },
+      { name: 'wallet',  ttl: 60_000, limit: 200  },
+    ]),
     PrismaModule,
     AuthModule,
     WalletModule,
