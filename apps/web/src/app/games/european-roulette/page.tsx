@@ -92,15 +92,21 @@ export default function RoulettePage() {
 
   return (
     <>
-      <div className="grid gap-3 md:gap-6 lg:grid-cols-[1fr_360px] lg:grid-rows-[auto_auto]">
+      {/* Single-column, centered, full-width on all breakpoints */}
+      <div className="mx-auto w-full max-w-4xl space-y-3 md:space-y-4">
 
-        {/* ─── 1. WHEEL — mobile: 1st, desktop: left-top ─── */}
-        <div className="order-1 lg:col-start-1 lg:row-start-1 rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-2 md:p-4">
+        {/* 1. WHEEL */}
+        <div className="rounded-2xl border border-border bg-gradient-to-b from-panel to-bg p-2 md:p-4">
           <RouletteWheel spinning={spinning} outcome={wheelOutcome} />
         </div>
 
-        {/* ─── 2. CHIPS + SPIN — mobile: 2nd, desktop: right-top ─── */}
-        <div className="order-3 lg:col-start-2 lg:row-start-1 rounded-2xl border border-border bg-panel p-3 md:p-4 space-y-3">
+        {/* 2. BETTING TABLE */}
+        <div className="rounded-2xl border border-border bg-panel p-2 md:p-4">
+          <BettingTable chip={chip} bets={bets} onPlace={place} />
+        </div>
+
+        {/* 3. CHIPS + SPIN */}
+        <div className="rounded-2xl border border-border bg-panel p-3 md:p-4 space-y-3">
           <div className="flex gap-1.5 md:gap-2">
             {[1, 5, 25, 100, 500].map((c) => (
               <button
@@ -135,13 +141,8 @@ export default function RoulettePage() {
           >{spinning ? '…' : t('spin')}</button>
         </div>
 
-        {/* ─── 3. BETTING TABLE — mobile: 3rd, desktop: left-bottom ─── */}
-        <div className="order-2 lg:col-start-1 lg:row-start-2 rounded-2xl border border-border bg-panel p-2 md:p-4">
-          <BettingTable chip={chip} bets={bets} onPlace={place} />
-        </div>
-
-        {/* ─── 4. HISTORY + FAIRNESS — mobile: 4th, desktop: right-bottom ─── */}
-        <div className="order-4 lg:col-start-2 lg:row-start-2 space-y-3 md:space-y-4">
+        {/* 4. HISTORY + FAIRNESS */}
+        <div className="space-y-3 md:space-y-4">
           <div className="rounded-2xl border border-border bg-panel p-3 md:p-4">
             <div className="text-xs text-gray-400 mb-2">{t('last_results')}</div>
             <div className="flex flex-wrap gap-1.5">
